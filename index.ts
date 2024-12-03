@@ -4,6 +4,8 @@ import type { Entry } from './types.ts'
 
 const API_BASE = 'https://api.feedbin.com/v2'
 
+const REPLACEMENTS = [['//vitalik.ca', '//vitalik.eth.limo']]
+
 const FEEDBIN_BASE_AUTH = Deno.env.get('FEEDBIN_BASE_AUTH') // user:password
 const BOT_TOKEN = Deno.env.get('BOT_TOKEN')
 const BOT_CHAT = Deno.env.get('BOT_CHAT')
@@ -52,11 +54,16 @@ const job = async () => {
   const entries = await entriesRes.json() as Entry[]
 
   for (const entry of entries) {
+    const url = REPLACEMENTS.reduce(
+      (acc, [search, replacement]) => acc.replaceAll(search, replacement),
+      entry.url,
+    )
+
     await sendMessage(
       [
         entry.title,
         '', // spacer
-        entry.url,
+        url,
       ].join('\n'),
       { parse_mode: 'HTML' },
     )
